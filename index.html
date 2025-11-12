@@ -15,36 +15,39 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .container {
   background: #2a2a2a;
-  padding: 40px;
+  padding: 30px 20px;
   border-radius: 15px;
   width: 90%;
   max-width: 650px;
+  margin: 20px auto;
   text-align: center;
   box-shadow: 0 0 30px #000;
-  margin: 20px auto;
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 h1 {
-  font-size: 2.5rem;
-  margin-bottom: 25px;
+  font-size: 2rem;
+  margin-bottom: 20px;
   color: #fff;
   text-shadow: 0 0 5px #fff;
+  word-break: break-word;
 }
 
 #answers {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  margin-top: 20px;
 }
 
 button, .answer-btn {
-  padding: 15px;
+  padding: 14px 12px;
   font-size: 16px;
   border: none;
   border-radius: 12px;
@@ -52,14 +55,15 @@ button, .answer-btn {
   font-weight: 600;
   width: 100%;
   position: relative;
-  overflow: hidden;
+  overflow-wrap: break-word;
   transition: transform 0.2s ease;
+  text-align: center;
 }
 
 button {
   background: #444;
   color: #fff;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 button:hover {
@@ -96,7 +100,6 @@ button:hover {
 }
 
 #progress-container {
-  margin: 20px 0;
   text-align: center;
 }
 
@@ -104,7 +107,7 @@ button:hover {
   background: #444;
   border-radius: 10px;
   overflow: hidden;
-  height: 18px;
+  height: 1.2em; /* responsive Height */
   width: 100%;
   margin-bottom: 5px;
 }
@@ -126,24 +129,25 @@ button:hover {
   border-radius: 8px;
   margin: 10px 0;
   overflow: hidden;
-  height: 30px;
+  height: 1.8em;
   text-align: right;
 }
 
 .result-fill {
   height: 100%;
-  line-height: 30px;
-  padding-right: 10px;
+  line-height: 1.8em;
+  padding-right: 8px;
   color: #fff;
   font-weight: bold;
   border-radius: 8px;
   white-space: nowrap;
   transition: width 0.5s ease;
+  overflow-wrap: break-word;
 }
 
 #result {
-  margin-top: 25px;
-  font-size: 1.3rem;
+  margin-top: 20px;
+  font-size: 1.2rem;
   color: #ffce00;
   font-weight: bold;
   text-shadow: 0 0 5px #ffce00;
@@ -162,34 +166,34 @@ footer {
   box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
 }
 
-/* Mobile Optimierung */
+/* Mobile Anpassungen */
 @media (max-width: 480px) {
   .container {
-    padding: 20px;
+    padding: 15px 12px;
     width: 95%;
   }
 
   h1 {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
 
   button, .answer-btn {
     font-size: 14px;
-    padding: 12px;
+    padding: 12px 10px;
   }
 
   #progress-bar {
-    height: 14px;
+    height: 1em;
   }
 
   .result-bar {
-    height: 24px;
+    height: 1.5em;
   }
 
   .result-fill {
-    font-size: 0.8rem;
-    line-height: 24px;
-    padding-right: 5px;
+    font-size: 0.75rem;
+    line-height: 1.5em;
+    padding-right: 4px;
   }
 
   #answers {
@@ -201,6 +205,7 @@ footer {
   }
 }
 </style>
+
 
 </head>
 <body>
