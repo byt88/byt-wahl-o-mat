@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Byt-o-Mat Deluxe</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Base & Font */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to right, #000000, #ff0000, #ffce00); 
+  color: #fff;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  background: #2a2a2a;
+  padding: 40px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 650px;
+  text-align: center;
+  box-shadow: 0 0 30px #000;
+  margin: 20px auto;
+  flex: 1;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 25px;
+  color: #fff;
+  text-shadow: 0 0 5px #fff;
+}
+
+#answers {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+button, .answer-btn {
+  padding: 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+button {
+  background: #444;
+  color: #fff;
+  margin-top: 20px;
+}
+
+button:hover {
+  background: #666;
+  transform: scale(1.05);
+}
+
+.answer-btn {
+  background: #333;
+  color: #fff;
+  border-radius: 12px;
+}
+
+.answer-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(to right, #000000, #ff0000, #ffce00);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  border-radius: 2px 2px 0 0;
+}
+
+.answer-btn:hover::after {
+  transform: scaleX(1);
+}
+
+.answer-btn:hover {
+  transform: translateY(-2px);
+}
+
+#progress-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+#progress-bar {
+  background: #444;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 18px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #ffce00;
+  transition: width 0.3s ease;
+}
+
+#progress-text {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.result-bar {
+  background: #444;
+  border-radius: 8px;
+  margin: 10px 0;
+  overflow: hidden;
+  height: 30px;
+  text-align: right;
+}
+
+.result-fill {
+  height: 100%;
+  line-height: 30px;
+  padding-right: 10px;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: width 0.5s ease;
+}
+
+#result {
+  margin-top: 25px;
+  font-size: 1.3rem;
+  color: #ffce00;
+  font-weight: bold;
+  text-shadow: 0 0 5px #ffce00;
+}
+
+.hidden {
+  display: none;
+}
+
+footer {
+  text-align: center;
+  padding: 15px 0;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 0.9rem;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Wahl-o-Mat Deluxe</h1>
+
+    <div id="question-container">
+      <p id="question"></p>
+      <div id="answers"></div>
+    </div>
+
+    <div id="progress-container">
+      <div id="progress-bar">
+        <div id="progress-fill"></div>
+      </div>
+      <span id="progress-text"></span>
+    </div>
+
+    <div id="result" class="hidden"></div>
+  </div>
+
+  <footer>
+    <p>© 2025 Byt Studios</p>
+  </footer>
+
+  <script>
+
+  const questions = [
+  // 1–20
+
+  { question:"Soll Deutschland vollständig auf erneuerbare Energien umsteigen?", answers:[
+    { text:"Ja, sofort!", party:{Grüne:2, SPD:1, FDP:0, CDU:1, AfD:0, Linke:2} },
+    { text:"Langsam", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, zu teuer", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll die Kernenergie beibehalten werden?", answers:[
+    { text:"Ja, ausbauen oder beibehalten", party:{Grüne:0, SPD:0, FDP:1, CDU:2, AfD:2, Linke:0} },
+    { text:"Nur beibehalten", party:{Grüne:0, SPD:1, FDP:1, CDU:1, AfD:1, Linke:0} },
+    { text:"Nein, aussteigen", party:{Grüne:2, SPD:1, FDP:0, CDU:0, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland Open-Source Software im öffentlichen Sektor nutzen?", answers:[
+    { text:"Ja, komplett", party:{Grüne:1, SPD:1, FDP:2, CDU:1, AfD:0, Linke:1} },
+    { text:"Moderate Nutzung", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, proprietär bevorzugen", party:{Grüne:0, SPD:0, FDP:0, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Rüstungsausgaben erhöhen?", answers:[
+    { text:"Ja, deutlich", party:{Grüne:0, SPD:1, FDP:1, CDU:2, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, lieber sparen", party:{Grüne:2, SPD:2, FDP:0, CDU:0, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland mehr Geld für Bildung und Forschung ausgeben?", answers:[
+    { text:"Ja, stark erhöhen", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderate Erhöhung", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, sparen", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Migration und Asylpolitik strenger werden?", answers:[
+    { text:"Ja, strengere Regeln", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, liberalisieren", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland mehr Sozialwohnungen bauen?", answers:[
+    { text:"Ja, dringend", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, Markt regelt", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die europäische Integration weiter stärken?", answers:[
+    { text:"Ja, stärker integrieren", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"So wie bisher", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, nationale Eigenständigkeit", party:{Grüne:0, SPD:0, FDP:2, CDU:1, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Strom- und Energiepreise stärker senken?", answers:[
+    { text:"Ja, deutlich senken", party:{Grüne:1, SPD:1, FDP:1, CDU:2, AfD:2, Linke:1} },
+    { text:"Moderate Senkung", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, nicht prioritär", party:{Grüne:0, SPD:0, FDP:2, CDU:0, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Digitalisierung in Schulen massiv ausbauen?", answers:[
+    { text:"Ja, volle Power", party:{Grüne:2, SPD:1, FDP:2, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderate Maßnahmen", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, nicht nötig", party:{Grüne:0, SPD:0, FDP:0, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Steuern für Unternehmen senken?", answers:[
+    { text:"Ja, deutlich", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, Steuern bleiben", party:{Grüne:2, SPD:2, FDP:0, CDU:0, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland Elektromobilität stärker fördern?", answers:[
+    { text:"Ja, stark fördern", party:{Grüne:2, SPD:1, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderate Förderung", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, Verbrenner bleiben", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die CO2-Bepreisung ausbauen?", answers:[
+    { text:"Ja, kräftig ausbauen", party:{Grüne:2, SPD:1, FDP:0, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, weniger Regulierung", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Ganztagsschulen und Kinderbetreuung massiv ausbauen?", answers:[
+    { text:"Ja, massiv", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderate Maßnahmen", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, nicht prioritär", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Asylverfahren schneller abwickeln?", answers:[
+    { text:"Ja, stark beschleunigen", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, langsamer ist ok", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland die öffentliche Verwaltung digitalisieren?", answers:[
+    { text:"Ja, komplett digital", party:{Grüne:2, SPD:1, FDP:2, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, Bürokratie bleibt", party:{Grüne:0, SPD:0, FDP:0, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+   { question:"Soll Deutschland die Renten stabilisieren durch höhere Beiträge?", answers:[
+    { text:"Ja, sichern", party:{Grüne:1, SPD:2, FDP:1, CDU:1, AfD:1, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, privat regeln", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Infrastruktur für Fahrrad und E-Mobilität massiv ausbauen?", answers:[
+    { text:"Ja, massiv", party:{Grüne:2, SPD:1, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderate Maßnahmen", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, reicht", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland Subventionen für fossile Energien abschaffen?", answers:[
+    { text:"Ja, sofort", party:{Grüne:2, SPD:1, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, beibehalten", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Polizeiausstattung erhöhen?", answers:[
+    { text:"Ja, deutlich", party:{Grüne:0, SPD:1, FDP:1, CDU:2, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, lieber Prävention", party:{Grüne:2, SPD:2, FDP:0, CDU:0, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland mehr in Klimaforschung investieren?", answers:[
+    { text:"Ja, stark", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, andere Priorität", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die EU-Flüchtlingspolitik stärker unterstützen?", answers:[
+    { text:"Ja, mehr Solidarität", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderate Unterstützung", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, nationale Lösungen", party:{Grüne:0, SPD:0, FDP:2, CDU:1, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland mehr in Digitalisierung und KI investieren?", answers:[
+    { text:"Ja, massiv", party:{Grüne:2, SPD:1, FDP:2, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, nicht vorrangig", party:{Grüne:0, SPD:0, FDP:0, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland den Mindestlohn erhöhen?", answers:[
+    { text:"Ja, deutlich", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, lieber Markt", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die öffentliche Gesundheitsversorgung stärken?", answers:[
+    { text:"Ja, massiv", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, privat besser", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Wehrpflicht wieder einführen?", answers:[
+    { text:"Ja, wieder einführen", party:{Grüne:0, SPD:1, FDP:1, CDU:2, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, nicht nötig", party:{Grüne:2, SPD:2, FDP:0, CDU:0, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland die Bürgerrechte bei Überwachung einschränken?", answers:[
+    { text:"Ja, stärker einschränken", party:{Grüne:0, SPD:1, FDP:1, CDU:2, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, Bürgerrechte schützen", party:{Grüne:2, SPD:2, FDP:0, CDU:0, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland die CO2-Steuer auf Energie erhöhen?", answers:[
+    { text:"Ja, deutlich", party:{Grüne:2, SPD:1, FDP:0, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, nicht erhöhen", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Arbeitszeit flexibilisieren?", answers:[
+    { text:"Ja, flexibler", party:{Grüne:1, SPD:1, FDP:2, CDU:2, AfD:1, Linke:1} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, lieber fest", party:{Grüne:0, SPD:0, FDP:0, CDU:1, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland mehr gegen Rechtsextremismus investieren?", answers:[
+    { text:"Ja, deutlich", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, nicht nötig", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland mehr in Forschung zu KI und Robotik investieren?", answers:[
+    { text:"Ja, massiv", party:{Grüne:2, SPD:1, FDP:2, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderate Investition", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, nicht prioritär", party:{Grüne:0, SPD:0, FDP:0, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland den ÖPNV kostenlos oder stark vergünstigt anbieten?", answers:[
+    { text:"Ja, komplett kostenlos", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat vergünstigt", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, normal bezahlen", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland mehr Geld in Kultur und Kunst investieren?", answers:[
+    { text:"Ja, stark", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, nicht prioritär", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Entwicklung erneuerbarer Energien stärker subventionieren?", answers:[
+    { text:"Ja, deutlich", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, nicht nötig", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland mehr in den ländlichen Raum investieren?", answers:[
+    { text:"Ja, stark", party:{Grüne:2, SPD:1, FDP:1, CDU:2, AfD:1, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, urban priorisieren", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland die Energiewende beschleunigen?", answers:[
+    { text:"Ja, massiv", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, langsam", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland mehr in Forschung zu medizinischer Innovation investieren?", answers:[
+    { text:"Ja, stark", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, nicht prioritär", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland den Datenschutz bei Internet und KI stärken?", answers:[
+    { text:"Ja, stark", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, lockern", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+
+  { question:"Soll Deutschland vollständig auf erneuerbare Energien umsteigen?", answers:[
+    { text:"Ja, sofort!", party:{Grüne:2, SPD:1, FDP:0, CDU:1, AfD:0, Linke:2} },
+    { text:"Langsam", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:0, Linke:1} },
+    { text:"Nein, zu teuer", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} }
+  ]},
+  { question:"Soll die Kernenergie beibehalten werden?", answers:[
+    { text:"Ja, ausbauen oder beibehalten", party:{Grüne:0, SPD:0, FDP:1, CDU:2, AfD:2, Linke:0} },
+    { text:"Nur beibehalten", party:{Grüne:0, SPD:1, FDP:1, CDU:1, AfD:1, Linke:0} },
+    { text:"Nein, aussteigen", party:{Grüne:2, SPD:1, FDP:0, CDU:0, AfD:0, Linke:2} }
+  ]},
+
+    { question:"Soll Deutschland den Einfluss der EU auf nationale Gesetze stark begrenzen?", answers:[
+    { text:"Ja, nationale Souveränität stärken", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, EU-Integration weiterführen", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland die Migration stark einschränken?", answers:[
+    { text:"Ja, deutlich einschränken", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, liberalisieren", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland die innere Sicherheit massiv ausbauen?", answers:[
+    { text:"Ja, Polizei & Sicherheitsdienste stärken", party:{Grüne:0, SPD:1, FDP:1, CDU:2, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, lieber Prävention", party:{Grüne:2, SPD:2, FDP:0, CDU:0, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland mehr traditionelle Familienwerte fördern?", answers:[
+    { text:"Ja, Familie stärken", party:{Grüne:0, SPD:1, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, modern & divers", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland weniger für erneuerbare Energien ausgeben, um Strompreise zu senken?", answers:[
+    { text:"Ja, Energiepreise priorisieren", party:{Grüne:0, SPD:0, FDP:2, CDU:2, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, Energiewende forcieren", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland weniger Flüchtlinge aufnehmen?", answers:[
+    { text:"Ja, deutlich reduzieren", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, solidarisch aufnehmen", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+   { question:"Soll Deutschland die EU-Finanztransfers an andere Länder stark reduzieren?", answers:[
+    { text:"Ja, nationale Interessen priorisieren", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, Solidarität beibehalten", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland den Einsatz von Euro- und Zentralbankpolitik begrenzen?", answers:[
+    { text:"Ja, mehr nationale Kontrolle", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, Status Quo beibehalten", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland stärker gegen Kriminalität durch Migranten vorgehen?", answers:[
+    { text:"Ja, konsequent", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, differenziert behandeln", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]},
+
+  { question:"Soll Deutschland stärker nationale Identität und Kultur fördern?", answers:[
+    { text:"Ja, bewusst fördern", party:{Grüne:0, SPD:0, FDP:1, CDU:1, AfD:2, Linke:0} },
+    { text:"Moderat", party:{Grüne:1, SPD:1, FDP:1, CDU:1, AfD:1, Linke:1} },
+    { text:"Nein, divers und global orientiert", party:{Grüne:2, SPD:2, FDP:1, CDU:1, AfD:0, Linke:2} }
+  ]}
+  // weitere Fragen hier...
+];
+
+let currentQuestion = 0;
+let scores = {Grüne:0, SPD:0, FDP:0, CDU:0, AfD:0, Linke:0};
+
+const questionEl = document.getElementById("question");
+const answersEl = document.getElementById("answers");
+const progressFill = document.getElementById("progress-fill");
+const progressText = document.getElementById("progress-text");
+const resultEl = document.getElementById("result");
+
+function showQuestion() {
+  const q = questions[currentQuestion];
+  questionEl.textContent = q.question;
+  answersEl.innerHTML = "";
+
+  q.answers.forEach(a=>{
+    const btn = document.createElement("button");
+    btn.classList.add("answer-btn");
+    btn.textContent = a.text;
+    btn.addEventListener("click", ()=> selectAnswer(a));
+    answersEl.appendChild(btn);
+  });
+
+  const progressPercent = Math.round((currentQuestion / questions.length) * 100);
+  progressFill.style.width = progressPercent + "%";
+  progressText.textContent = `Frage ${currentQuestion+1} von ${questions.length}`;
+}
+
+function selectAnswer(answer) {
+  for(let party in answer.party){
+    scores[party] += answer.party[party];
+  }
+  currentQuestion++;
+  if(currentQuestion < questions.length){
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  // Gesamten Fragebogen ausblenden
+  document.getElementById("question-container").classList.add("hidden");
+  document.getElementById("progress-container").classList.add("hidden");
+
+  let total = Object.values(scores).reduce((a,b)=>a+b,0) || 1;
+  resultEl.innerHTML = "<h2>Deine Übereinstimmung mit den Parteien:</h2>";
+
+  for(let party in scores){
+    let percent = Math.round(scores[party]/total*100);
+    const bar = document.createElement("div");
+    bar.classList.add("result-bar");
+    const fill = document.createElement("div");
+    fill.classList.add("result-fill");
+    fill.style.width = percent+"%";
+    fill.style.backgroundColor = partyColor(party);
+    fill.textContent = `${percent}% ${party}`;
+    bar.appendChild(fill);
+    resultEl.appendChild(bar);
+  }
+
+  resultEl.classList.remove("hidden");
+}
+
+function partyColor(party){
+  switch(party){
+    case "Grüne": return "#4CAF50";
+    case "SPD": return "#E53935";
+    case "FDP": return "#FFEB3B";
+    case "CDU": return "#000000";
+    case "AfD": return "#009EE0";
+    case "Linke": return "#8B008B";
+    default: return "#666";
+  }
+}
+
+showQuestion();
+  </script>
+</body>
+</html>
